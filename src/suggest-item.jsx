@@ -45,7 +45,17 @@ export default class SuggestItem extends React.Component {
       onMouseDown={this.props.onMouseDown}
       onMouseOut={this.props.onMouseOut}
       onClick={this.onClick}>
-        {this.props.suggest.label}
+        {(() => {
+          if (this.props.suggest.structured_formatting) {
+            return (
+              <div>
+                <div>{this.props.suggest.structured_formatting.main_text}</div>
+                <div>{this.props.suggest.structured_formatting.secondary_text}</div>
+              </div>
+            );
+          }
+          return this.props.suggest.label;
+        })()}
     </li>;
   }
 }

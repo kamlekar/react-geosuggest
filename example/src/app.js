@@ -9,6 +9,29 @@ var App = React.createClass({ // eslint-disable-line
    * Render the example app
    * @return {Function} React render function
    */
+
+  componentWillMount() {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    var googleMaps = this.props.googleMaps ||
+      (window.google && // eslint-disable-line no-extra-parens
+        window.google.maps) ||
+      this.googleMaps;
+
+    /* istanbul ignore next */
+    if (!googleMaps) {
+      console.error(// eslint-disable-line no-console
+        'Google map api was not found in the page.');
+      return;
+    }
+    this.googleMaps = googleMaps;
+
+    this.autocompleteService = new googleMaps.places.AutocompleteService();
+    this.geocoder = new googleMaps.Geocoder();
+  },
+
   render: function() {
     var fixtures = [
       {label: 'New York', location: {lat: 40.7033127, lng: -73.979681}},
@@ -26,7 +49,29 @@ var App = React.createClass({ // eslint-disable-line
           onSuggestSelect={this.onSuggestSelect}
           onSuggestNoResults={this.onSuggestNoResults}
           location={new google.maps.LatLng(53.558572, 9.9278215)}
-          radius="20" />
+          radius="20"
+          suggestItemRender={(suggest) => {
+            return this.geocoder.geocode(
+              suggest.placeId && !suggest.isFixture ?
+                {placeId: suggest.placeId} : {address: suggest.label},
+              (results, status) => {
+                if (status === this.googleMaps.GeocoderStatus.OK) {
+                  var gmaps = results[0],
+                    location = gmaps.geometry.location;
+
+                  suggest.gmaps = gmaps;
+                  suggest.location = {
+                    lat: location.lat(),
+                    lng: location.lng()
+                  };
+                }
+                return (
+                  <div>adasd</div>
+                );
+              }
+            );
+            
+          }}/>
       </div>
     );
   },
